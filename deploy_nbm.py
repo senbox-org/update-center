@@ -53,7 +53,7 @@ def duplicate_current(args):
   new_updatecenter='{uc}_{nowstr}'.format(uc=os.path.join(UPDATECENTER_ROOT, args.release), nowstr=nowstr)
   logging.info('Creating %s' % new_updatecenter)
   shutil.copytree(old_updatecenter, new_updatecenter)
-  return new_updatecenter
+  return os.path.basename(new_updatecenter)
 
 def get_codenamebase(nbm):
   f = zipfile.ZipFile(nbm)
@@ -75,7 +75,7 @@ def deploy_nbms(args, uc):
   nbms_todeploy = [f for f in os.listdir(args.nbmdir) if is_nbm(os.path.join(args.nbmdir, f))]
   codename_todeploy = [get_codenamebase(os.path.join(args.nbmdir,nbm)) for nbm in nbms_todeploy]
 
-  repo = os.path.join(uc, args.repo)
+  repo = os.path.join(UPDATECENTER_ROOT, uc, args.repo)
   current_nbms = [f for f in os.listdir(repo) if is_nbm(os.path.join(repo, f))]
   nbms_todelete = [nbm for nbm in current_nbms if get_codenamebase(os.path.join(repo,nbm)) in codename_todeploy]
   for nbm_todelete in nbms_todelete:
@@ -198,7 +198,7 @@ def get_dtd():
   return dtd
 
 def generate_updatexml(args, uc):
-  repo = os.path.join(uc, args.repo)
+  repo = os.path.join(UPDATECENTER_ROOT, uc, args.repo)
   nbms = [f for f in os.listdir(repo) if is_nbm(os.path.join(repo, f))]
   
   licenses = set()
@@ -244,7 +244,7 @@ def generate_updatexml(args, uc):
     shutil.copyfileobj(f_in, f_out)
 
 def update_symlink(args, uc):
-  pass
+  os.system('cd {0} && ln -nsf {1} {2}'.format(UPDATECENTER_ROOT, uc, args.release)
 
 def main():
   parser = argparse.ArgumentParser(prog='deploy_nbm.py', description='Deploy nbms to the Update Center')
