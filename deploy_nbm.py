@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+""" Helper script to update SNAP update center with new NBMs
+
+This code is released under GPL-3 or any later version.
+"""
 
 import os
 import shutil
@@ -11,6 +15,15 @@ from lxml import etree
 import StringIO
 import gzip
 from distutils.version import LooseVersion
+
+__author__ = "Julien Malik"
+__copyright__ = "Copyright 2015, CS-SI"
+__credits__ = ["Julien Malik", "Marco Peters"]
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Julien Malik"
+__email__ = "julien.malik@c-s.fr"
+__status__ = "Production"
 
 # UPDATECENTER_ROOT="/var/www/updatecenter"
 UPDATECENTER_ROOT="/home/jmalik/tmp/updatecentertest/updatecenter"
@@ -235,7 +248,6 @@ def update_symlink(args, uc):
   pass
 
 def main():
-  
   parser = argparse.ArgumentParser(prog='deploy_nbm.py', description='Deploy nbms to the Update Center')
   parser.add_argument('nbmdir', nargs='?', help='The directory containing the new nbm files to deploy', type=check_nbm_dir)
   parser.add_argument('--repo', nargs='?', help='The repository to deploy to', \
