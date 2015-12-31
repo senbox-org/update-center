@@ -244,7 +244,7 @@ def generate_updatexml(args, uc):
     shutil.copyfileobj(f_in, f_out)
 
 def update_symlink(args, uc):
-  os.system('cd {0} && ln -nsf {1} {2}'.format(UPDATECENTER_ROOT, uc, args.release)
+  os.system('cd {0} && ln -nsf {1} {2}'.format(UPDATECENTER_ROOT, uc, args.release))
 
 def main():
   parser = argparse.ArgumentParser(prog='deploy_nbm.py', description='Deploy nbms to the Update Center')
