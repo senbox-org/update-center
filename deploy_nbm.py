@@ -25,8 +25,7 @@ __maintainer__ = "Julien Malik"
 __email__ = "julien.malik@c-s.fr"
 __status__ = "Production"
 
-# UPDATECENTER_ROOT="/var/www/updatecenter"
-UPDATECENTER_ROOT="/home/jmalik/tmp/updatecentertest/updatecenter"
+UPDATECENTER_ROOT="/var/www/updatecenter"
 
 def is_nbm(path):
   # TODO : add more sanity checks to avoid corrupted nbms
