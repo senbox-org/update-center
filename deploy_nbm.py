@@ -46,6 +46,10 @@ def check_permissions():
   # TODO : need to be root
   pass
 
+def check_input(args):
+  if args.nbmdir is None:
+      raise argparse.ArgumentTypeError("Missing [nbmdir] argument")
+
 def duplicate_current(args):
   now = datetime.datetime.now()
   nowstr = '{0:%Y%m%d-%H%M%S}'.format(now)
@@ -259,6 +263,7 @@ def main():
   
   setup_logging()
   check_permissions()
+  check_input(args)
   uc = duplicate_current(args)
   deploy_nbms(args, uc)
   generate_updatexml(args, uc)
