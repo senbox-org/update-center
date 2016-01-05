@@ -54,7 +54,7 @@ def check_input(args):
   nbms_todeploy = [f for f in os.listdir(args.nbmdir) if is_nbm(os.path.join(args.nbmdir, f))]
   codename_todeploy = [get_codenamebase(os.path.join(args.nbmdir,nbm)) for nbm in nbms_todeploy]
 
-  repo = os.path.join(get_current_updatecenter(), args.repo)
+  repo = os.path.join(get_current_updatecenter(args), args.repo)
   current_nbms = [f for f in os.listdir(repo) if is_nbm(os.path.join(repo, f))]
   nbms_todelete = [nbm for nbm in current_nbms if get_codenamebase(os.path.join(repo,nbm)) in codename_todeploy]
   for nbm_todelete in nbms_todelete:
