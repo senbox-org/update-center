@@ -47,8 +47,34 @@ def check_permissions():
   pass
 
 def check_input(args):
+  logging.info("Checking input...")
   if args.nbmdir is None:
       raise argparse.ArgumentTypeError("Missing [nbmdir] argument")
+
+  nbms_todeploy = [f for f in os.listdir(args.nbmdir) if is_nbm(os.path.join(args.nbmdir, f))]
+  codename_todeploy = [get_codenamebase(os.path.join(args.nbmdir,nbm)) for nbm in nbms_todeploy]
+
+  repo = os.path.join(get_current_updatecenter(), args.repo)
+  current_nbms = [f for f in os.listdir(repo) if is_nbm(os.path.join(repo, f))]
+  nbms_todelete = [nbm for nbm in current_nbms if get_codenamebase(os.path.join(repo,nbm)) in codename_todeploy]
+  for nbm_todelete in nbms_todelete:
+    nbm_todelete_path = os.path.join(repo,nbm_todelete)
+    for nbm_todeploy in nbms_todeploy:
+      nbm_todeploy_path = os.path.join(args.nbmdir,nbm_todeploy)
+      if get_codenamebase(nbm_todeploy_path) == get_codenamebase(nbm_todelete_path):
+        version_todeploy = get_specification_version(nbm_todeploy_path)
+        version_todelete = get_specification_version(nbm_todelete_path)
+        if version_todeploy > version_todelete:
+          logging.warning('Will delete {0} (version {1}, superseeded by {2} with version {3})'\
+            .format(nbm_todelete, version_todelete, nbm_todeploy, version_todeploy))
+        else:
+          message = 'You want to deploy {0} with specification version {1}, but there is already {2} with version {3} in the repository'\
+            .format(nbm_todeploy, version_todeploy, nbm_todelete, version_todelete)
+          logging.error(message)
+          raise RuntimeError(message)
+
+def get_current_updatecenter(args):
+  return os.path.realpath(os.path.join(UPDATECENTER_ROOT,args.release))
 
 def duplicate_current(args):
   now = datetime.datetime.now()
