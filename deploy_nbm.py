@@ -49,7 +49,8 @@ def check_permissions():
 def check_input(args):
   logging.info("Checking input...")
   if args.nbmdir is None:
-      raise argparse.ArgumentTypeError("Missing [nbmdir] argument")
+      logging.info("[nbmdir] argument not set")
+      return
 
   nbms_todeploy = [f for f in os.listdir(args.nbmdir) if is_nbm(os.path.join(args.nbmdir, f))]
   codename_todeploy = [get_codenamebase(os.path.join(args.nbmdir,nbm)) for nbm in nbms_todeploy]
@@ -102,6 +103,9 @@ def get_specification_version(nbm):
   raise RuntimeError('Unable to get OpenIDE-Module-Specification-Version from %s' % nbm)
 
 def deploy_nbms(args, uc):
+  if args.nbmdir is None:
+      logging.info("No nbm to deploy")
+      return
   nbms_todeploy = [f for f in os.listdir(args.nbmdir) if is_nbm(os.path.join(args.nbmdir, f))]
   codename_todeploy = [get_codenamebase(os.path.join(args.nbmdir,nbm)) for nbm in nbms_todeploy]
 
