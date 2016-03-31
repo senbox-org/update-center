@@ -282,7 +282,7 @@ def main():
   parser.add_argument('--repo', nargs='?', help='The repository to deploy to', \
     choices=['snap', 'snap-extensions', 'snap-community'], required=True)
   parser.add_argument('--release', nargs='?', help='The major SNAP release', \
-    choices=['2.0'], default='2.0')
+    choices=['2.0', '3.0', '4.0', '5.0'], default='3.0')
   parser.add_argument('--notif', nargs='?', help='The notification message')
   parser.add_argument('--notifurl', nargs='?', help='The notification url (only used if --notif is provided)')
   args = parser.parse_args()
