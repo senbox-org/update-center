@@ -16,6 +16,13 @@ import StringIO
 import gzip
 from distutils.version import LooseVersion
 
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email.Utils import COMMASPACE, formatdate
+from email import Encoders
+
 __author__ = "Julien Malik"
 __copyright__ = "Copyright 2015, CS-SI"
 __credits__ = ["Julien Malik", "Marco Peters"]
@@ -103,6 +110,8 @@ def get_specification_version(nbm):
   raise RuntimeError('Unable to get OpenIDE-Module-Specification-Version from %s' % nbm)
 
 def deploy_nbms(args, uc):
+  report = ""
+
   if args.nbmdir is None:
       logging.info("No nbm to deploy")
       return
@@ -120,8 +129,10 @@ def deploy_nbms(args, uc):
         version_todeploy = get_specification_version(nbm_todeploy_path)
         version_todelete = get_specification_version(nbm_todelete_path)
         if version_todeploy > version_todelete:
-          logging.warning('Deleting {0} (was version {1}, superseeded by {2} with version {3})'\
-            .format(nbm_todelete, version_todelete, nbm_todeploy, version_todeploy))
+          message = 'Replacing {0} (was version {1}, superseeded by {2} with version {3})'\
+                              .format(nbm_todelete, version_todelete, nbm_todeploy, version_todeploy)
+          logging.warning(message)
+          report += "\n%s" % message
         else:
           message = 'You want to deploy {0} with specification version {1}, but there is already {2} with version {3} in the repository'\
             .format(nbm_todeploy, version_todeploy, nbm_todelete, version_todelete)
@@ -129,7 +140,9 @@ def deploy_nbms(args, uc):
           raise RuntimeError(message)
   
   for nbm in nbms_todeploy:
-    logging.info('Deploying %s (codename : %s)' % (nbm, get_codenamebase(os.path.join(args.nbmdir,nbm))))
+    message = 'Deploying %s (codename : %s)' % (nbm, get_codenamebase(os.path.join(args.nbmdir,nbm)))
+    logging.info(message)
+    report += "\n%s" % message
 
   for nbm_todelete in nbms_todelete:
     nbm_todelete_path = os.path.join(repo,nbm_todelete)
@@ -139,6 +152,8 @@ def deploy_nbms(args, uc):
     nbm_todeploy_input_path = os.path.join(args.nbmdir,nbm_todeploy)
     nbm_todeploy_output_path = os.path.join(repo,nbm_todeploy)
     shutil.copy(nbm_todeploy_input_path, nbm_todeploy_output_path)
+
+  return report
 
 def get_module_info(nbm):
   f = zipfile.ZipFile(nbm)
@@ -280,6 +295,30 @@ def generate_updatexml(args, uc):
 def update_symlink(args, uc):
   os.system('cd {0} && ln -nsf {1} {2}'.format(UPDATECENTER_ROOT, uc, args.release))
 
+def reporting(report):
+    sendmail('root@step-email.net', ['julien.malik@c-s.fr'], 'Update Center modifications', \
+             report, [], "localhost")
+
+def sendmail(send_from, send_to, subject, text, files=[], server="localhost"):
+    assert type(send_to)==list
+    assert type(files)==list
+    msg = MIMEMultipart()
+    msg['From'] = send_from
+    msg['To'] = COMMASPACE.join(send_to)
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = subject
+    msg.attach( MIMEText(text) )
+    for f in files:
+        part = MIMEBase('application', "octet-stream")
+        part.set_payload( open(f,"rb").read() )
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f))
+        msg.attach(part)
+
+    smtp = smtplib.SMTP(server)
+    smtp.sendmail(send_from, send_to, msg.as_string())
+    smtp.close()
+
 def main():
   parser = argparse.ArgumentParser(prog='deploy_nbm.py', description='Deploy nbms to the Update Center')
   parser.add_argument('nbmdir', nargs='?', help='The directory containing the new nbm files to deploy', type=check_nbm_dir)
@@ -295,10 +334,10 @@ def main():
   check_permissions()
   check_input(args)
   uc = duplicate_current(args)
-  deploy_nbms(args, uc)
+  report = deploy_nbms(args, uc)
   generate_updatexml(args, uc)
   update_symlink(args, uc)
-  
+  reporting(report) 
   
 if __name__=="__main__":
   main()
