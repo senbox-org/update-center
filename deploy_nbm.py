@@ -23,6 +23,7 @@ from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 from email import encoders
 
+
 __author__ = "Julien Malik, Marco Peters"
 __copyright__ = "Copyright 2015, CS-SI"
 __credits__ = ["Julien Malik", "Marco Peters"]
@@ -33,6 +34,7 @@ __email__ = "marco.peters@brockmann-consult.de"
 __status__ = "Production"
 
 UPDATECENTER_ROOT = "/var/www/updatecenter"
+UC_REPOSITORIES = ['snap', 'snap-extensions', 'snap-community']
 
 
 def is_nbm(path):
@@ -82,10 +84,12 @@ def check_input(args):
                 version_todeploy = get_specification_version(nbm_todeploy_path)
                 version_todelete = get_specification_version(nbm_todelete_path)
                 if version_todeploy > version_todelete:
-                    logging.warning('Will delete {0} (version {1}, superseeded by {2} with version {3})' \
-                                    .format(nbm_todelete, version_todelete, nbm_todeploy, version_todeploy))
+                    message = 'Replacing {0} (was version {1}, superseeded by {2} with version {3})' \
+                        .format(nbm_todelete, version_todelete, nbm_todeploy, version_todeploy)
+                    logging.warning(message)
                 else:
-                    message = 'You want to deploy {0} with specification version {1}, but there is already {2} with version {3} in the repository' \
+                    message = 'You want to deploy {0} with specification version {1}, but there is ' \
+                              'already {2} with version {3} in the repository' \
                         .format(nbm_todeploy, version_todeploy, nbm_todelete, version_todelete)
                     logging.error(message)
                     raise RuntimeError(message)
@@ -94,15 +98,29 @@ def check_input(args):
 def get_current_updatecenter(args):
     return os.path.realpath(os.path.join(UPDATECENTER_ROOT, args.release))
 
+def init_for_new_version(args):
+    release_uc = os.path.join(UPDATECENTER_ROOT, args.release)
+    if not os.path.isdir(release_uc):
+        nowstr = create_now_string()
+        real_uc_dir = '{uc}_{nowstr}'.format(uc=release_uc, nowstr=nowstr)
+        os.mkdir(real_uc_dir)
+        for repo in UC_REPOSITORIES:
+            os.mkdir(os.path.join(real_uc_dir, repo))
+        os.symlink(real_uc_dir, release_uc)
 
 def duplicate_current(args):
-    now = datetime.datetime.now()
-    nowstr = '{0:%Y%m%d-%H%M%S}'.format(now)
+    nowstr = create_now_string()
     old_updatecenter = os.path.realpath(os.path.join(UPDATECENTER_ROOT, args.release))
     new_updatecenter = '{uc}_{nowstr}'.format(uc=os.path.join(UPDATECENTER_ROOT, args.release), nowstr=nowstr)
     logging.info('Creating %s' % new_updatecenter)
     shutil.copytree(old_updatecenter, new_updatecenter)
     return os.path.basename(new_updatecenter)
+
+
+def create_now_string():
+    now = datetime.datetime.now()
+    nowstr = '{0:%Y%m%d-%H%M%S}'.format(now)
+    return nowstr
 
 
 def get_codenamebase(nbm):
@@ -341,13 +359,12 @@ def sendmail(send_from, send_to, subject, text, files=[], server="localhost"):
     smtp.sendmail(send_from, send_to, msg.as_string())
     smtp.close()
 
-
 def main():
     parser = argparse.ArgumentParser(prog='deploy_nbm.py', description='Deploy nbms to the Update Center')
     parser.add_argument('nbmdir', nargs='?', help='The directory containing the new nbm files to deploy',
                         type=check_nbm_dir)
     parser.add_argument('--repo', nargs='?', help='The repository to deploy to', \
-                        choices=['snap', 'snap-extensions', 'snap-community'], required=True)
+                        choices=UC_REPOSITORIES, required=True)
     parser.add_argument('--release', nargs='?', help='The major SNAP release', type=check_release)
     parser.add_argument('--notif', nargs='?', help='The notification message')
     parser.add_argument('--notifurl', nargs='?', help='The notification url (only used if --notif is provided)')
@@ -356,6 +373,7 @@ def main():
     setup_logging()
     check_permissions()
     check_input(args)
+    init_for_new_version(args)
     uc = duplicate_current(args)
     report = deploy_nbms(args, uc)
     generate_updatexml(args, uc)
