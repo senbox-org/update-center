@@ -45,9 +45,9 @@ def is_nbm(path):
 def check_nbm_dir(nbmdir):
     if not os.path.isdir(nbmdir):
         raise argparse.ArgumentTypeError("%s is not a directory" % nbmdir)
-    nbms = [f for f in os.listdir(nbmdir) if is_nbm(os.path.join(nbmdir, f))]
-    if not nbms:
-        raise argparse.ArgumentTypeError("%s does not contain any nbm file" % nbmdir)
+    # nbms = [f for f in os.listdir(nbmdir) if is_nbm(os.path.join(nbmdir, f))]
+    # if not nbms:
+    #     raise argparse.ArgumentTypeError("%s does not contain any nbm file" % nbmdir)
     return nbmdir
 
 def check_release(release):
