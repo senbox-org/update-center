@@ -107,15 +107,14 @@ def init_for_new_version(args):
         for repo in UC_REPOSITORIES:
             os.mkdir(os.path.join(real_uc_dir, repo))
         os.symlink(real_uc_dir, release_uc)
-
-def duplicate_current(args):
-    nowstr = create_now_string()
-    old_updatecenter = os.path.realpath(os.path.join(UPDATECENTER_ROOT, args.release))
-    new_updatecenter = '{uc}_{nowstr}'.format(uc=os.path.join(UPDATECENTER_ROOT, args.release), nowstr=nowstr)
-    logging.info('Creating %s' % new_updatecenter)
-    shutil.copytree(old_updatecenter, new_updatecenter)
-    return os.path.basename(new_updatecenter)
-
+        return os.path.basename(real_uc_dir)
+    else:
+        nowstr = create_now_string()
+        old_updatecenter = os.path.realpath(os.path.join(UPDATECENTER_ROOT, args.release))
+        new_updatecenter = '{uc}_{nowstr}'.format(uc=os.path.join(UPDATECENTER_ROOT, args.release), nowstr=nowstr)
+        logging.info('Creating %s' % new_updatecenter)
+        shutil.copytree(old_updatecenter, new_updatecenter)
+        return os.path.basename(new_updatecenter)
 
 def create_now_string():
     now = datetime.datetime.now()
@@ -373,8 +372,7 @@ def main():
     setup_logging()
     check_permissions()
     check_input(args)
-    init_for_new_version(args)
-    uc = duplicate_current(args)
+    uc = init_for_new_version(args)
     report = deploy_nbms(args, uc)
     generate_updatexml(args, uc)
     update_symlink(args, uc)
