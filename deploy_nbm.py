@@ -34,7 +34,7 @@ __email__ = "marco.peters@brockmann-consult.de"
 __status__ = "Production"
 
 UPDATECENTER_ROOT = "/var/www/updatecenter"
-UC_REPOSITORIES = ['snap', 'snap-extensions', 'snap-community']
+UC_REPOSITORIES = ['snap', 'snap-toolboxes', 'snap-extensions', 'snap-community']
 
 
 def is_nbm(path):
