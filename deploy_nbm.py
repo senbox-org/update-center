@@ -333,7 +333,7 @@ def update_symlink(args, uc):
 
 
 def reporting(report):
-    sendmail('root@step-email.net', ['kraftek@c-s.ro', 'oana.hogoiu@c-s.ro', 'martino.ferrari@csgroup.eu', 'marco.peters@brockmann-consult.de'],
+    sendmail('root@step-email.net', ['kraftek@c-s.ro', 'oana.hogoiu@c-s.ro', 'florian.douziech@csgroup.eu', 'marco.peters@brockmann-consult.de'],
              'Update Center modifications', \
              report, [], "localhost")
 
