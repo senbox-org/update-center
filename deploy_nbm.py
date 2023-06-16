@@ -187,22 +187,42 @@ def deploy_nbms(args, uc):
     return report
 
 
-def get_module_info(nbm):
+def get_module_info(nbm, repo):
     f = zipfile.ZipFile(nbm)
     with f.open('Info/info.xml') as info:
         root = etree.parse(info).getroot()
 
         children = list(root)
         license = None
+        manifest = None
         for child in children:
             if child.tag == 'license':
                 license = child
+            if repo == 'snap-community-plugins':
+                if child.tag == 'manifest':
+                    manifest = update_manifest(child);
+                    if manifest is not None:
+                        root.replace(child, manifest)
         if license is not None:
             del root[root.index(license)]
 
         root.set('downloadsize', str(os.path.getsize(nbm)))
         return (root, license)
 
+def update_manifest(old_manifest):
+    manifest = old_manifest
+    name = old_manifest.get('OpenIDE-Module-Name');
+    version = old_manifest.get('OpenIDE-Module-Specification-Version');
+    
+    description = old_manifest.get('OpenIDE-Module-Long-Description');
+    description = description + '<p><object classid="org.esa.snap.rcp.windows.CommunityPluginVotePanel">'
+    description = description + '<param name="name" value="' + name + '"/>'
+    description = description + '<param name="version" value="' + version + '"/>'
+    description = description + '</object></p>'
+    
+    manifest.set('OpenIDE-Module-Long-Description', description)
+    
+    return manifest
 
 def get_dtd():
     # content of http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd
@@ -296,7 +316,7 @@ def generate_updatexml(args, uc):
 
     for nbm in nbms:
         nbm_path = os.path.join(repo, nbm)
-        (root, license) = get_module_info(nbm_path)
+        (root, license) = get_module_info(nbm_path, args.repo)
         module_updates.append(root)
         if license is not None:
             # add this license, if not already done
