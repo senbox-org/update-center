@@ -22,7 +22,7 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 from email import encoders
-
+import urllib2
 
 __author__ = "Julien Malik, Marco Peters"
 __copyright__ = "Copyright 2015, CS-SI"
@@ -35,7 +35,15 @@ __status__ = "Production"
 
 UPDATECENTER_ROOT = "/var/www/updatecenter"
 UC_REPOSITORIES = ['snap', 'snap-toolboxes', 'snap-supported-plugins', 'snap-community-plugins']
+ONLINE_HELP_URL = "http://localhost:8888/generate?version={0}.0&rootFolder={1}"
 
+def generate_online_help(version, rootFolder):
+    try:
+        print(rootFolder)
+        print(version)
+        contents = urllib2.urlopen(ONLINE_HELP_URL.format(version, rootFolder)).read()
+    except:
+        print("Error generating the online help")
 
 def is_nbm(path):
     # TODO : add more sanity checks to avoid corrupted nbms
@@ -184,6 +192,8 @@ def deploy_nbms(args, uc):
         nbm_todeploy_output_path = os.path.join(repo, nbm_todeploy)
         shutil.copy(nbm_todeploy_input_path, nbm_todeploy_output_path)
 
+    # generate the online help
+    generate_online_help(args.release, uc)
     return report
 
 
