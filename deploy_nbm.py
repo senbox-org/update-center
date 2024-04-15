@@ -29,8 +29,8 @@ __copyright__ = "Copyright 2015, CS-SI"
 __credits__ = ["Julien Malik", "Marco Peters"]
 __license__ = "GPL"
 __version__ = "1.0"
-__maintainer__ = "Marco Peters"
-__email__ = "marco.peters@brockmann-consult.de"
+__maintainer__ = "Tom Block
+__email__ = "tom.block@brockmann-consult.de"
 __status__ = "Production"
 
 UPDATECENTER_ROOT = "/var/www/updatecenter"
