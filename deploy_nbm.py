@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """ Helper script to update SNAP update center with new NBMs
 
 This code is released under GPL-3 or any later version.
@@ -29,7 +30,7 @@ __copyright__ = "Copyright 2015, CS-SI"
 __credits__ = ["Julien Malik", "Marco Peters"]
 __license__ = "GPL"
 __version__ = "1.0"
-__maintainer__ = "Tom Block
+__maintainer__ = "Tom Block"
 __email__ = "tom.block@brockmann-consult.de"
 __status__ = "Production"
 
@@ -353,7 +354,7 @@ def update_symlink(args, uc):
 
 
 def reporting(report):
-    sendmail('root@step-email.net', ['kraftek@c-s.ro', 'oana.hogoiu@c-s.ro', 'florian.douziech@csgroup.eu', 'marco.peters@brockmann-consult.de', 'tom.block@brockmann-consult.de', 'diana.harosa@c-s.ro'],
+    sendmail('root@step-email.net', ['kraftek@c-s.ro', 'oana.hogoiu@c-s.ro', 'florian.douziech@csgroup.eu', 'tom.block@brockmann-consult.de', 'diana.harosa@c-s.ro'],
              'Update Center modifications', \
              report, [], "localhost")
 
