@@ -191,12 +191,37 @@ def deploy_nbms(args, uc):
     for nbm_todeploy in nbms_todeploy:
         nbm_todeploy_input_path = os.path.join(args.nbmdir, nbm_todeploy)
         nbm_todeploy_output_path = os.path.join(repo, nbm_todeploy)
-        shutil.copy(nbm_todeploy_input_path, nbm_todeploy_output_path)
+        if repo == 'snap-community-plugins':
+            copy_community_plugin(nbm_todeploy_input_path, nbm_todeploy_output_path)
+        else:
+            shutil.copy(nbm_todeploy_input_path, nbm_todeploy_output_path)
 
     # generate the online help
     generate_online_help(args.release, uc)
     return report
 
+def copy_community_plugin(src, dest):
+    with zipfile.ZipFile(src, 'r') as zin:
+        with zipfile.ZipFile(dest, 'w') as zout:
+            zout.comment = zin.comment # preserve the comment
+            for item in zin.infolist():
+                if item.filename != 'Info/info.xml':
+                    zout.writestr(item, zin.read(item.filename))
+                else:
+                    with zin.open('Info/info.xml') as info:
+                        root = etree.parse(info).getroot()
+
+                        children = list(root)
+                        manifest = None
+                        for child in children:
+                            if child.tag == 'manifest':
+                                manifest = update_manifest(child);
+                                if manifest is not None:
+                                    root.replace(child, manifest)
+                                    
+                        zout.writestr(item, etree.tostring(root, pretty_print=True, encoding="UTF-8", xml_declaration=True,
+                                          doctype='<!DOCTYPE module PUBLIC "-//NetBeans//DTD Autoupdate Module Info 2.5//EN" "http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd">'))           
+        # 
 
 def get_module_info(nbm, repo):
     f = zipfile.ZipFile(nbm)
@@ -205,15 +230,16 @@ def get_module_info(nbm, repo):
 
         children = list(root)
         license = None
-        manifest = None
+        #manifest = None
         for child in children:
             if child.tag == 'license':
                 license = child
-            if repo == 'snap-community-plugins':
-                if child.tag == 'manifest':
-                    manifest = update_manifest(child);
-                    if manifest is not None:
-                        root.replace(child, manifest)
+            #if repo == 'snap-community-plugins':
+            #    if child.tag == 'manifest':
+            #        manifest = update_manifest(child);
+            #        if manifest is not None:
+            #            root.replace(child, manifest)
+        # 
         if license is not None:
             del root[root.index(license)]
 
