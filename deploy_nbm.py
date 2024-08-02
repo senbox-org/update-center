@@ -191,7 +191,7 @@ def deploy_nbms(args, uc):
     for nbm_todeploy in nbms_todeploy:
         nbm_todeploy_input_path = os.path.join(args.nbmdir, nbm_todeploy)
         nbm_todeploy_output_path = os.path.join(repo, nbm_todeploy)
-        if repo == 'snap-community-plugins':
+        if args.repo == 'snap-community-plugins':
             copy_community_plugin(nbm_todeploy_input_path, nbm_todeploy_output_path)
         else:
             shutil.copy(nbm_todeploy_input_path, nbm_todeploy_output_path)
